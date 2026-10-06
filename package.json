@@ -1,0 +1,53 @@
+{
+	"name": "tabu-js-res",
+	"version": "0.1.0",
+	"description": "Tree-shakeable Result for JavaScript: Ok or Err, with a sync and async call boundary",
+	"type": "module",
+	"sideEffects": false,
+	"main": "./src/index.js",
+	"types": "./src/index.d.ts",
+	"exports": {
+		".": {
+			"types": "./src/index.d.ts",
+			"default": "./src/index.js"
+		},
+		"./res": {
+			"types": "./src/res.d.ts",
+			"default": "./src/res.js"
+		},
+		"./invoke": {
+			"types": "./src/invoke.d.ts",
+			"default": "./src/invoke.js"
+		},
+		"./define-res": {
+			"types": "./src/defineRes.d.ts",
+			"default": "./src/defineRes.js"
+		}
+	},
+	"files": [
+		"src"
+	],
+	"keywords": [
+		"result",
+		"either",
+		"error-handling"
+	],
+	"author": "dimtabu <dima.taburetkin@gmail.com>",
+	"license": "ISC",
+	"scripts": {
+		"test": "node --test test/*.test.js",
+		"test:types": "tsd",
+		"coverage": "c8 --reporter=html --reports-dir=.coverage --all --include=src/**/*.js node --test test/*.test.js"
+	},
+	"tsd": {
+		"directory": "test",
+		"compilerOptions": {
+			"module": "NodeNext"
+		}
+	},
+	"devDependencies": {
+		"c8": "^12.0.0",
+		"tsd": "^0.33.0",
+		"typescript": "^7.0.2"
+	}
+}
