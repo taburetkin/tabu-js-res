@@ -25,7 +25,8 @@
 		}
 	},
 	"files": [
-		"src"
+		"src",
+		"reference.md"
 	],
 	"keywords": [
 		"result",

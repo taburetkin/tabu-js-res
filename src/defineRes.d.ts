@@ -17,7 +17,7 @@ export interface CustomDefinedRes<TOk, TErr> {
 	asyncRes: (value: unknown, options?: InvokeArg<TOk | TErr>) => Promise<TOk | TErr>;
 }
 
-export interface DefineResHooks<TOk = unknown, TErr = unknown> {
+export interface DefineResOptions<TOk = unknown, TErr = unknown> {
 	createOk?: (value: unknown) => TOk;
 	createErr?: (error: unknown) => TErr;
 	isRes?: (arg: unknown) => boolean;
@@ -27,24 +27,24 @@ export interface DefineResHooks<TOk = unknown, TErr = unknown> {
 }
 
 export function defineRes<TOk, TErr>(
-	hooks: DefineResHooks<TOk, TErr> & {
+	options: DefineResOptions<TOk, TErr> & {
 		createOk: (value: unknown) => TOk;
 		createErr: (error: unknown) => TErr;
 	},
 ): CustomDefinedRes<TOk, TErr>;
 
 export function defineRes<TOk>(
-	hooks: DefineResHooks<TOk, ErrRes<unknown>> & {
+	options: DefineResOptions<TOk, ErrRes<unknown>> & {
 		createOk: (value: unknown) => TOk;
 		createErr?: undefined;
 	},
 ): CustomDefinedRes<TOk, ErrRes<unknown>>;
 
 export function defineRes<TErr>(
-	hooks: DefineResHooks<OkRes<unknown>, TErr> & {
+	options: DefineResOptions<OkRes<unknown>, TErr> & {
 		createOk?: undefined;
 		createErr: (error: unknown) => TErr;
 	},
 ): CustomDefinedRes<OkRes<unknown>, TErr>;
 
-export function defineRes(hooks?: DefineResHooks): DefinedRes;
+export function defineRes(options?: DefineResOptions): DefinedRes;

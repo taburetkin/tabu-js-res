@@ -7,7 +7,6 @@ export {
 	RES,
 	type AnyRes,
 	type ResArg,
-	type ResHooks,
 	type ResInit,
 	type ResOptions,
 } from './res.js';
@@ -18,4 +17,4 @@ export {
 	type InvokeFields,
 	type InvokeOptions,
 } from './invoke.js';
-export { defineRes, type CustomDefinedRes, type DefineResHooks, type DefinedRes } from './defineRes.js';
+export { defineRes, type CustomDefinedRes, type DefineResOptions, type DefinedRes } from './defineRes.js';

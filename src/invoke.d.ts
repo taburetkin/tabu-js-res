@@ -1,4 +1,4 @@
-import type { ErrRes, OkRes, Res, ResArg, ResHooks, ResInit } from './res.js';
+import type { AnyRes, ErrRes, OkRes, Res, ResArg, ResInit, ResOptions } from './res.js';
 
 type KeptRes<T> = T extends Res<unknown, unknown> ? T : OkRes<T>;
 
@@ -7,8 +7,8 @@ export interface InvokeFields<A extends readonly unknown[] = readonly unknown[]>
 	invokeContext?: unknown;
 }
 
-export type InvokeOptions<A extends readonly unknown[] = readonly unknown[]> =
-	ResHooks &
+export type InvokeOptions<A extends readonly unknown[] = readonly unknown[], R = AnyRes> =
+	ResOptions<R> &
 	InvokeFields<A> &
 	(
 		| { invokeArgs: A; invokeArg?: never }
@@ -17,7 +17,7 @@ export type InvokeOptions<A extends readonly unknown[] = readonly unknown[]> =
 	);
 
 export type InvokeArg<R, A extends readonly unknown[] = readonly unknown[]> =
-	| (InvokeOptions<A> & { init?: ResInit<R> })
+	| InvokeOptions<A, R>
 	| ResInit<R>;
 
 type SyncResult<T> = KeptRes<T> | ErrRes<unknown>;

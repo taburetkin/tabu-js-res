@@ -25,22 +25,15 @@ export class ErrRes<E = unknown> extends Res<never, E> {
 	isErr(): this is ErrRes<E>;
 }
 
+import type { DefineResOptions } from './defineRes.js';
+
 export type AnyRes = OkRes<unknown> | ErrRes<unknown>;
 
 export type ResInit<R> = (res: R) => void;
 
-export interface ResHooks {
-	createOk?: (value: unknown) => unknown;
-	createErr?: (error: unknown) => unknown;
-	isRes?: (arg: unknown) => boolean;
-	isResOk?: (arg: unknown) => boolean;
-	getValue?: (arg: unknown) => unknown;
-	getError?: (arg: unknown) => unknown;
-	mutate?: (res: AnyRes) => void;
-}
-
-export type ResOptions<R = AnyRes> = ResHooks & {
+export type ResOptions<R = AnyRes> = DefineResOptions & {
 	init?: ResInit<R>;
+	mutate?: (res: AnyRes) => void;
 };
 
 export type ResArg<R> = ResOptions<R> | ResInit<R>;

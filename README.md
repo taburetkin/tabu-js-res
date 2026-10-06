@@ -8,6 +8,7 @@
 
 ## Contents
 
+- [Reference](reference.md)
 - [Why](#why)
   - [What it is good at](#what-it-is-good-at)
   - [Compared with other Result libraries](#compared-with-other-result-libraries)
@@ -384,27 +385,23 @@ api.OK(1, { createOk: undefined })
 
 ### Options
 
-The second argument is this object, or a function. A function is `init`.
+The second argument is a `ResOptions` object, or a function. A function is `init`. `defineRes` stores a `DefineResOptions` and does not store `init` or `mutate`.
 
-`OK`, `ERR`, and `RES` read the result fields. `syncRes` and `asyncRes` also read the call fields, then pass the same object through to `RES` on success and to `ERR` on a throw.
+`OK`, `ERR`, and `RES` read `ResOptions`. `syncRes` and `asyncRes` read an `InvokeOptions`: that is `ResOptions` plus `shouldInvoke`, `invokeContext`, and either `invokeArgs` or `invokeArg`. On success they pass that object to `RES`. On a throw they pass it to `ERR`.
 
 ```ts
-type Options<R, A extends unknown[]> = {
-	// result
-	createOk?: (value: unknown) => unknown
-	createErr?: (error: unknown) => unknown
-	isRes?: (value: unknown) => boolean
-	isResOk?: (result: unknown) => boolean
-	getValue?: (result: unknown) => unknown
-	getError?: (result: unknown) => unknown
-	init?: (result: R) => void
-	mutate?: (result: unknown) => void
+interface DefineResOptions<TOk = unknown, TErr = unknown> {
+	createOk?: (value: unknown) => TOk
+	createErr?: (error: unknown) => TErr
+	isRes?: (arg: unknown) => boolean
+	isResOk?: (arg: unknown) => boolean
+	getValue?: (arg: unknown) => unknown
+	getError?: (arg: unknown) => unknown
+}
 
-	// call, syncRes and asyncRes only
-	shouldInvoke?: (fn: (...args: A) => unknown) => boolean
-	invokeContext?: unknown
-	invokeArgs?: A
-	invokeArg?: A[number]
+type ResOptions<R> = DefineResOptions & {
+	init?: (result: R) => void
+	mutate?: (result: AnyRes) => void
 }
 ```
 
