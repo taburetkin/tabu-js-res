@@ -36,24 +36,33 @@ const defIsResOk = arg => arg.ok;
 const defGetValue = arg => arg.value;
 const defGetError = arg => arg.error;
 
+function callIfFunction(fn, arg) {
+	if (typeof fn === 'function') fn(arg);
+}
+
 function create(ok, arg, options) {
-	
 	const createOk = options?.createOk ?? defCreateOk;
 	const createErr = options?.createErr ?? defCreateErr;
 
 	const res = ok ? createOk(arg) : createErr(arg);
-
-	const cb = typeof options?.init === 'function' ? options.init : undefined;
-
-	if (cb) cb(res);
-
+	callIfFunction(options?.init, res);
 	return res;
+}
+
+function initOrMutate(source, next, options) {
+	if (next === source) {
+		callIfFunction(options?.mutate, next);
+		return next;
+	}
+	callIfFunction(options?.init, next);
+	return next;
 }
 
 function convert(isOk, arg, options) {
 	if (typeof options === 'function') {
 		options = { init: options }
 	}
+
 	const isRes = options?.isRes ?? defIsRes;
 	const isResOk = options?.isResOk ?? defIsResOk;
 	const getValue = options?.getValue ?? defGetValue;
@@ -62,10 +71,11 @@ function convert(isOk, arg, options) {
 
 	if (isRes(arg)) {
 		if (isOk == null || isResOk(arg) === normIsOk) {
-			if (typeof options?.mutate === 'function') {
-				options.mutate(arg);
-			}
-			return arg;
+			const convertToRes = options?.convertToRes;
+			const next = typeof convertToRes === 'function'
+				? convertToRes(arg, options)
+				: arg;
+			return initOrMutate(arg, next, options);
 		}
 		arg = isResOk(arg) ? getValue(arg) : getError(arg);
 	}

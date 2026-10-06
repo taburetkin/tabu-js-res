@@ -1,6 +1,10 @@
 import { expectType } from 'tsd';
 import { ERR, OK, RES, ErrRes, OkRes, Res } from 'tabu-js-res';
 
+OK(1, {
+	convertToRes(arg) { return arg; },
+});
+
 expectType<OkRes<number>>(OK(1));
 expectType<OkRes<number>>(OK(OK(1)));
 expectType<OkRes<string>>(OK(ERR('e')));

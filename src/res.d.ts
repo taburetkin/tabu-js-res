@@ -34,6 +34,7 @@ export type ResInit<R> = (res: R) => void;
 export type ResOptions<R = AnyRes> = DefineResOptions & {
 	init?: ResInit<R>;
 	mutate?: (res: AnyRes) => void;
+	convertToRes?: (arg: unknown, options: ResOptions) => unknown;
 };
 
 export type ResArg<R> = ResOptions<R> | ResInit<R>;

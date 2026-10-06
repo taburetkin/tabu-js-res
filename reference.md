@@ -79,6 +79,8 @@ Normalizes `value` into an ok result.
 
 A `createOk` passed on this call replaces the default factory at runtime. The return type of this stock [`OK`](#OK) stays `KeptOk<T>`. The typed factory return shows up on the functions from [`defineRes`](#defineRes).
 
+`convertToRes`, when it is a function, runs on an ok result before [`mutate`](#ResOptions) or [`init`](#ResInit). The same reference comes back and `mutate` runs. A different object comes back and `init` runs on that object. An [`ErrRes`](#ErrRes) still flips through `getError` and `createOk`, and `convertToRes` is not called. There is no default function. The return type stays `KeptOk<T>`.
+
 
 <small><a href="#contents">to contents</a></small>
 
@@ -109,6 +111,8 @@ Normalizes `error` into an error result.
 
 A `createErr` passed on this call replaces the default factory at runtime. The return type of this stock [`ERR`](#ERR) stays `KeptErr<T>`.
 
+`convertToRes` follows the same rule as on [`OK`](#OK). It runs for an error result that is already an error. An [`OkRes`](#OkRes) still flips through `getValue` and `createErr`, and the hook is not called. The return type stays `KeptErr<T>`.
+
 
 <small><a href="#contents">to contents</a></small>
 
@@ -135,6 +139,8 @@ Keeps a result of either kind. A value that is not a result becomes ok.
 - An [`OkRes`](#OkRes) or [`ErrRes`](#ErrRes) comes back as the same reference. `mutate` runs. `init` does not.
 - A plain value becomes [`OkRes<T>`](#OkRes) through `createOk`. `init` runs.
 - If `isRes` returns false, the value is not treated as a result. An existing [`OkRes`](#OkRes) is then wrapped, and the new ok result's value is that object.
+
+`convertToRes` runs for either kind, because [`RES`](#RES) does not ask for one. A plain value does not go through the hook. The same reference runs `mutate`. A different object runs `init`. The return type stays `KeptRes<T>`.
 
 
 <small><a href="#contents">to contents</a></small>
@@ -249,7 +255,7 @@ Returns the five functions with your class fields already filled in, so later ca
 
 ### Accepts
 
-`options` is a [`DefineResOptions`](#DefineResOptions). The fields it stores are `createOk`, `createErr`, `isRes`, `isResOk`, `getValue`, and `getError`. `init`, `mutate`, and the invoke fields are not stored. Passing them is a type error, and at runtime they are dropped.
+`options` is a [`DefineResOptions`](#DefineResOptions). The fields it stores are `createOk`, `createErr`, `isRes`, `isResOk`, `getValue`, and `getError`. `init`, `mutate`, `convertToRes`, and the invoke fields are not stored. Passing them is a type error, and at runtime they are dropped.
 
 Omitted fields stay on the default classes. An empty object and a missing argument both return the stock functions, typed as [`DefinedRes`](#DefinedRes).
 
@@ -413,12 +419,19 @@ The fields [`defineRes`](#defineRes) remembers. Every field is optional. `TOk` a
 type ResOptions<R = AnyRes> = DefineResOptions & {
 	init?: ResInit<R>
 	mutate?: (res: AnyRes) => void
+	convertToRes?: (arg: unknown, options: ResOptions) => unknown
 }
 ```
 
-The options object for one call of [`OK`](#OK), [`ERR`](#ERR), or [`RES`](#RES). It is [`DefineResOptions`](#DefineResOptions) plus the two per-call callbacks.
+The options object for one call of [`OK`](#OK), [`ERR`](#ERR), or [`RES`](#RES). It is [`DefineResOptions`](#DefineResOptions) plus three callbacks. [`defineRes`](#defineRes) does not store them.
 
-`init` receives the result that was just created. `mutate` receives the existing result when that same reference is returned. A call runs one of them, not both. [`defineRes`](#defineRes) does not store either callback.
+**init** receives the result that was just created. It does not run when the same reference is returned.
+
+**mutate** receives the existing result when that same reference is returned. It does not run for a result that was just created.
+
+A call runs **init** or **mutate**, not both.
+
+**convertToRes** runs only after `isRes` has accepted the value and the kind already matches. Return that same object and **mutate** runs. Return a different object and **init** runs on it. A missing hook, or a value that is not a function, leaves the result as it is. There is no built-in function.
 
 
 <small><a href="#contents">to contents</a></small>

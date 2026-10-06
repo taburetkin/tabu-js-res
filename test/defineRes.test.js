@@ -49,6 +49,22 @@ describe('defineRes', () => {
 		assert.equal(seen, res);
 	});
 
+	it('does not keep convertToRes from the definition and still runs it on a call', () => {
+		const ok = OK(1);
+		let fromDefinition = false;
+		const api = defineRes({
+			convertToRes(arg) { fromDefinition = true; return arg; },
+		});
+		assert.equal(api.OK(ok), ok);
+		assert.equal(fromDefinition, false);
+
+		const next = new OkRes(2);
+		const result = api.syncRes(() => ok, {
+			convertToRes() { return next; },
+		});
+		assert.equal(result, next);
+	});
+
 	it('does not keep mutate from the definition and still runs mutate on a call', () => {
 		const ok = OK(1);
 		let fromDefinition = false;

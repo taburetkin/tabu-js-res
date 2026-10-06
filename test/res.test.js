@@ -167,6 +167,63 @@ describe('RES', () => {
 	});
 });
 
+describe('convertToRes', () => {
+	it('mutates the same object when the hook returns it', () => {
+		const ok = OK(1);
+		let mutated;
+		let inited = false;
+		const result = OK(ok, {
+			convertToRes(arg) { return arg; },
+			mutate(res) { mutated = res; },
+			init() { inited = true; },
+		});
+		assert.equal(result, ok);
+		assert.equal(mutated, ok);
+		assert.equal(inited, false);
+	});
+
+	it('inits a replacement and does not mutate the original', () => {
+		const ok = OK(1);
+		const next = new OkRes(2);
+		let mutated = false;
+		let inited;
+		const result = OK(ok, {
+			convertToRes() { return next; },
+			mutate() { mutated = true; },
+			init(res) { inited = res; },
+		});
+		assert.equal(result, next);
+		assert.equal(mutated, false);
+		assert.equal(inited, next);
+	});
+
+	it('ignores a convertToRes that is not a function', () => {
+		const ok = OK(1);
+		assert.equal(OK(ok, { convertToRes: 1 }), ok);
+	});
+
+	it('does not call the hook when the kind flips', () => {
+		const err = ERR('e');
+		const ok = OK(1);
+		let called = false;
+		const hook = () => { called = true; };
+		assertOk(OK(err, { convertToRes: hook }), 'e');
+		assert.equal(called, false);
+		assertErr(ERR(ok, { convertToRes: hook }), 1);
+		assert.equal(called, false);
+	});
+
+	it('runs the hook for both kinds of RES and for an error that stays an error', () => {
+		const ok = OK(1);
+		const err = ERR('e');
+		const nextOk = new OkRes(2);
+		const nextErr = new ErrRes('x');
+		assert.equal(RES(ok, { convertToRes() { return nextOk; } }), nextOk);
+		assert.equal(RES(err, { convertToRes() { return nextErr; } }), nextErr);
+		assert.equal(ERR(err, { convertToRes() { return nextErr; } }), nextErr);
+	});
+});
+
 describe('custom hooks', () => {
 	it('uses the supplied factories and recognizers', () => {
 		const createdOk = OK('v', customHooks);

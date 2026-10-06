@@ -19,6 +19,7 @@
   - [Build an ok or an error](#build-an-ok-or-an-error)
   - [Normalize a value](#normalize-a-value)
   - [init and mutate](#init-and-mutate)
+  - [convertToRes](#converttores)
   - [Turn a call into a result](#turn-a-call-into-a-result)
   - [Call with arguments and this](#call-with-arguments-and-this)
   - [Use your own result objects](#use-your-own-result-objects)
@@ -227,6 +228,43 @@ OK(2, {
 onCreate // false
 ```
 
+### `convertToRes`
+
+`isRes` can accept an object that is not your class. `convertToRes` then decides what to hand back. Return that same object and `mutate` runs. Return a different object and `init` runs on it. There is no default function. A flip does not call the hook, and `defineRes` does not store it.
+
+```js
+import { ERR, ErrRes, OK, OkRes } from 'tabu-js-res'
+
+const foreign = { ok: true, value: 1 }
+const isRes = (arg) => arg != null && typeof arg === 'object' && typeof arg.ok === 'boolean'
+
+let inited = null
+const local = OK(foreign, {
+	isRes,
+	convertToRes(arg) {
+		if (arg instanceof OkRes || arg instanceof ErrRes) return arg
+		return arg.ok ? new OkRes(arg.value) : new ErrRes(arg.error)
+	},
+	init(result) { inited = result },
+})
+local instanceof OkRes // true
+local.value            // 1
+inited === local       // true
+
+let mutated = false
+OK(local, {
+	convertToRes(arg) { return arg },
+	mutate() { mutated = true },
+})
+mutated // true
+
+let called = false
+OK(ERR('missing'), {
+	convertToRes() { called = true },
+})
+called // false
+```
+
 ### Turn a call into a result
 
 `syncRes` runs a function. A return value becomes ok. A throw is passed to `ERR`: a non-result becomes the error payload, a thrown error result is kept, and a thrown ok result is flipped. A value that is not a function is wrapped as ok and is not called.
@@ -385,7 +423,7 @@ api.OK(1, { createOk: undefined })
 
 ### Options
 
-The second argument is a `ResOptions` object, or a function. A function is `init`. `defineRes` stores a `DefineResOptions` and does not store `init` or `mutate`.
+The second argument is a `ResOptions` object, or a function. A function is `init`. `defineRes` stores a `DefineResOptions` and does not store `init`, `mutate`, or `convertToRes`.
 
 `OK`, `ERR`, and `RES` read `ResOptions`. `syncRes` and `asyncRes` read an `InvokeOptions`: that is `ResOptions` plus `shouldInvoke`, `invokeContext`, and either `invokeArgs` or `invokeArg`. On success they pass that object to `RES`. On a throw they pass it to `ERR`.
 
@@ -402,6 +440,7 @@ interface DefineResOptions<TOk = unknown, TErr = unknown> {
 type ResOptions<R> = DefineResOptions & {
 	init?: (result: R) => void
 	mutate?: (result: AnyRes) => void
+	convertToRes?: (arg: unknown, options: ResOptions) => unknown
 }
 ```
 
@@ -415,9 +454,10 @@ type ResOptions<R> = DefineResOptions & {
 - `getError` reads the payload when an error result is flipped into an ok.
 - `init` receives a result that was just created. It does not run when an existing result is returned unchanged.
 - `mutate` receives an existing result that is returned unchanged. It does not run for a result that was just created.
+- `convertToRes` runs only when `isRes` already accepted the value and the kind matches. Return the same object and `mutate` runs. Return a different object and `init` runs on that object. A flip does not call it. There is no default function.
 - `shouldInvoke` decides whether to call the function. `false` skips the call and wraps the function itself as ok.
 - `invokeContext` is `this` for the call.
 - `invokeArgs` is the argument list.
 - `invokeArg` is the single argument.
 
-`defineRes` remembers only `createOk`, `createErr`, `isRes`, `isResOk`, `getValue`, and `getError`. The call fields, `init`, and `mutate` stay on the individual call. A field passed on that call replaces the remembered one for that call.
+`defineRes` remembers only `createOk`, `createErr`, `isRes`, `isResOk`, `getValue`, and `getError`. The call fields, `init`, `mutate`, and `convertToRes` stay on the individual call. A field passed on that call replaces the remembered one for that call.

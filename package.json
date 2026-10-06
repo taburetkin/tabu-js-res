@@ -1,6 +1,6 @@
 {
 	"name": "tabu-js-res",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"description": "Tree-shakeable Result for JavaScript: Ok or Err, with a sync and async call boundary",
 	"type": "module",
 	"sideEffects": false,
@@ -26,7 +26,8 @@
 	},
 	"files": [
 		"src",
-		"reference.md"
+		"reference.md",
+		"CHANGELOG.md"
 	],
 	"keywords": [
 		"result",

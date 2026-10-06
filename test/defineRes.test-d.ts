@@ -11,6 +11,9 @@ defineRes({ mutate() {} });
 // @ts-expect-error init is not mixed in by defineRes
 defineRes({ init() {} });
 
+// @ts-expect-error convertToRes is not mixed in by defineRes
+defineRes({ convertToRes() {} });
+
 const both = defineRes({
 	createOk: (value: unknown) => ({ ok: true as const, value }),
 	createErr: (error: unknown) => ({ ok: false as const, error }),
