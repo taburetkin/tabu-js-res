@@ -34,6 +34,17 @@
 	],
 	"author": "dimtabu <dima.taburetkin@gmail.com>",
 	"license": "ISC",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/taburetkin/tabu-js-res.git"
+	},
+	"homepage": "https://github.com/taburetkin/tabu-js-res#readme",
+	"bugs": {
+		"url": "https://github.com/taburetkin/tabu-js-res/issues"
+	},
+	"engines": {
+		"node": ">=14.6"
+	},
 	"scripts": {
 		"test": "node --test test/*.test.js",
 		"test:types": "tsd",
