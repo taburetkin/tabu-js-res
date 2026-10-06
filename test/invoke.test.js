@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { describe, it } from 'node:test';
 import { asyncRes, syncRes } from '../src/invoke.js';
-import { ERR, OK } from '../src/res.js';
+import { ERR, OK, Res } from '../src/res.js';
 import { assertErr, assertOk } from './assertResult.js';
 
 async function eachBoundary(check) {
@@ -37,6 +37,28 @@ describe('syncRes and asyncRes', () => {
 			const res = await call(() => existing, () => { called = true; });
 			assert.equal(res, existing);
 			assert.equal(called, false);
+		});
+	});
+
+	it('returns the object convertToRes built from a result-like value', async () => {
+		const isRes = (arg) => arg instanceof Res || (
+			!!arg && typeof arg === 'object' && typeof arg.ok === 'boolean'
+		);
+		const convertToRes = (arg) => {
+			if (arg instanceof Res) return arg;
+			const made = arg.ok ? OK(arg.value) : ERR(arg.error);
+			made.extra = arg.extra;
+			return made;
+		};
+		const own = OK(2);
+		await eachBoundary(async (call) => {
+			const adopted = await call(
+				() => ({ ok: true, value: 1, extra: 7 }),
+				{ isRes, convertToRes },
+			);
+			assertOk(adopted, 1);
+			assert.equal(adopted.extra, 7);
+			assert.equal(await call(() => own, { isRes, convertToRes }), own);
 		});
 	});
 

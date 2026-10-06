@@ -265,6 +265,28 @@ OK(ERR('missing'), {
 called // false
 ```
 
+A foreign function often returns a plain object of that shape, sometimes with fields of its own. Pass the same two hooks to `syncRes`. Your own result stays itself. The plain object becomes yours, and you copy across whatever else you need.
+
+```js
+import { ErrRes, OkRes, Res, syncRes } from 'tabu-js-res'
+
+const isRes = (arg) => arg instanceof Res
+	|| (arg != null && typeof arg === 'object' && typeof arg.ok === 'boolean')
+
+const adopted = syncRes(() => ({ ok: true, value: 1, extra: 7 }), {
+	isRes,
+	convertToRes(arg) {
+		if (arg instanceof Res) return arg
+		const made = arg.ok ? new OkRes(arg.value) : new ErrRes(arg.error)
+		made.extra = arg.extra
+		return made
+	},
+})
+adopted instanceof OkRes // true
+adopted.value            // 1
+adopted.extra            // 7
+```
+
 ### Turn a call into a result
 
 `syncRes` runs a function. A return value becomes ok. A throw is passed to `ERR`: a non-result becomes the error payload, a thrown error result is kept, and a thrown ok result is flipped. A value that is not a function is wrapped as ok and is not called.
